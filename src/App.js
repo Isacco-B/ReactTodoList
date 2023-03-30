@@ -1,14 +1,44 @@
 import { useState } from "react";
 
 function NoteListItem(props) {
-  return <li>{props.note.description}</li>;
+  const incompleteStyle = {};
+  const completeStyle = { textDecoration: "line-through" };
+
+  function handleComplete() {
+    props.completeNote(props.index)
+  }
+
+  function handleDelete() {
+    props.deleteNote(props.index)
+  }
+
+  return (
+    <li>
+      <div>
+        <div style={props.note.complete ? completeStyle : incompleteStyle}>
+          {props.note.description}
+        </div>
+        <div>
+          <button type="button" onClick={handleComplete}>Complete</button>
+        </div>
+        <div>
+          <button type="button" onClick={handleDelete}>Delete</button>
+        </div>
+      </div>
+    </li>
+  );
 }
 
 function NoteList(props) {
   return (
     <ul>
       {props.notes.map((note, i) => {
-        return <NoteListItem note={note} key={i} />;
+        return <NoteListItem
+          note={note}
+          key={i}
+          index={i}
+          completeNote={props.completeNote}
+          deleteNote={props.deleteNote} />;
       })}
     </ul>
   );
@@ -47,20 +77,35 @@ function NoteForm(props) {
 
 function App() {
   const [notes, setNotes] = useState([
-    { description: "Fai la spesa", complite: false },
-    { description: "Lava la macchina", complite: false },
-    { description: "Scrivi codice", complite: false },
-    { description: "Lava i piatti", complite: false },
+    { description: "Fai la spesa", complete: true },
+    { description: "Lava la macchina", complete: false },
+    { description: "Scrivi codice", complete: true },
+    { description: "Lava i piatti", complete: false },
   ]);
 
   function addNote(description) {
-    setNotes([...notes, { description: description, complite: false }]);
+    setNotes([...notes, { description: description, complete: false }]);
+  }
+
+  function completeNote(index) {
+    setNotes([
+      ...notes.slice(0,index),
+      {...notes[index], complete: true},
+      ...notes.slice(index+1),
+      ]);
+  }
+
+  function deleteNote(index) {
+    setNotes(notes.filter((_, i)=> i !== index));
   }
 
   return (
     <div>
       <NoteForm addNote={addNote} />
-      <NoteList notes={notes} />
+      <NoteList
+        notes={notes}
+        completeNote={completeNote}
+        deleteNote={deleteNote}/>
     </div>
   );
 }
